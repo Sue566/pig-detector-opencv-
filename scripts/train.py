@@ -18,6 +18,11 @@ try:
 except ImportError:  # pragma: no cover - handled at runtime
     torch = None
 
+try:
+    from tqdm.auto import tqdm
+except ImportError:  # pragma: no cover - handled at runtime
+    tqdm = None
+
 
 
 def load_config(path: str):
@@ -34,16 +39,19 @@ def train(args):
         raise RuntimeError(
             "PyTorch is not installed. Please install dependencies from requirements.txt"
         )
+    if tqdm is None:
+        raise RuntimeError(
+            "tqdm is not installed. Please install dependencies from requirements.txt"
+        )
+    # 延迟导入其余依赖，避免在仅查看 --help 时出错
     from utils.dataset import YoloDataset
     from utils.model import create_model
-    from utils.transforms import get_train_transforms, get_val_transforms
+    from utils.transforms import get_train_transforms
     cfg = load_config(args.config)
 
     train_ds = YoloDataset(cfg['train_dir'], transforms=get_train_transforms())
-    val_ds = YoloDataset(cfg['val_dir'], transforms=get_val_transforms())
 
     train_loader = DataLoader(train_ds, batch_size=cfg['batch_size'], shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
-    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = create_model(cfg['num_classes'] + 1)  # +1 for background
@@ -54,7 +62,9 @@ def train(args):
 
     for epoch in range(cfg['num_epochs']):
         model.train()
-        for images, targets in train_loader:
+        # tqdm 显示当前 epoch 的批次进度
+        epoch_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{cfg['num_epochs']}")
+        for images, targets in epoch_bar:
             images = list(img.to(device) for img in images)
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -65,7 +75,10 @@ def train(args):
             losses.backward()
             optimizer.step()
 
-        print(f"Epoch {epoch+1} done, loss: {losses.item():.4f}")
+            epoch_bar.set_postfix(loss=f"{losses.item():.4f}")
+
+        # 每个 epoch 结束打印提示，防止用户误以为卡住
+        print(f"Epoch {epoch+1} completed")
 
     Path(cfg['model_dir']).mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), Path(cfg['model_dir']) / 'best_model.pth')
