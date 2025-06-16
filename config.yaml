@@ -1,0 +1,8 @@
+# 训练参数示例
+train_dir: data/train
+val_dir: data/val
+num_classes: 1             # 仅检测猪
+batch_size: 4
+num_epochs: 10
+learning_rate: 0.001
+model_dir: models
