@@ -33,8 +33,16 @@ class YoloDataset(Dataset):
                     continue
                 # YOLO 格式: class cx cy w h (相对值)
                 cx, cy, w, h = map(float, parts[1:])
-                boxes.append([cx, cy, w, h])
-        target = {"boxes": torch.tensor(boxes, dtype=torch.float32), "labels": torch.ones(len(boxes), dtype=torch.int64)}
+                # 转为左上角-右下角绝对坐标
+                x1 = (cx - w / 2) * img.width
+                y1 = (cy - h / 2) * img.height
+                x2 = (cx + w / 2) * img.width
+                y2 = (cy + h / 2) * img.height
+                boxes.append([x1, y1, x2, y2])
+        target = {
+            "boxes": torch.tensor(boxes, dtype=torch.float32),
+            "labels": torch.ones(len(boxes), dtype=torch.int64),
+        }
         if self.transforms:
             img = self.transforms(img)
         return img, target

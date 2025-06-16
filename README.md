@@ -6,9 +6,13 @@
 
 ```
 pig-detector-opencv/
-├── data/           # 训练与验证数据集
+├── data/           # 训练与验证数据集 (YOLO 格式)
 │   ├── train/
+│   │   ├── images/  # 图片文件
+│   │   └── labels/  # 同名 .txt，格式: class cx cy w h
 │   └── val/
+│       ├── images/
+│       └── labels/
 │
 ├── scripts/        # 训练与推理脚本
 │   ├── train.py
@@ -31,6 +35,9 @@ pig-detector-opencv/
 2. 在 `config.yaml` 中配置数据集路径和训练参数。
 3. 运行 `python scripts/train.py` 开始训练，训练完成后会在 `models/` 目录下保存权重。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
+
+数据集采用 YOLO v5 标注格式，`utils.dataset.YoloDataset` 会在加载时将相对坐标
+转换为像素级的左上角、右下角坐标，以便传入 Faster R-CNN 模型训练。
 
 运行上述脚本时若仅查看 `--help` 信息，可在未安装深度学习依赖的情况下执行。
 真正训练或导出模型则需要提前安装 `torch`、`torchvision` 等依赖，确保环境支持 GPU
