@@ -14,6 +14,7 @@ except ImportError:  # pragma: no cover - handled at runtime
 torch = None
 Image = None
 F = None
+estimate_length_weight = None
 
 
 def load_config(path: str):
@@ -40,12 +41,15 @@ def load_model(cfg_path: str, weight_path: str):
 
 
 def main(args):
-    global Image, F
+    global Image, F, estimate_length_weight
     if Image is None or F is None:
         from PIL import Image as PILImage
         import torchvision.transforms.functional as TF
         Image = PILImage
         F = TF
+    if estimate_length_weight is None:
+        from utils.estimate import estimate_length_weight as elw
+        estimate_length_weight = elw
     model = load_model(args.config, args.weights)
     img = Image.open(args.image).convert('RGB')
     tensor = F.to_tensor(img)
@@ -57,9 +61,10 @@ def main(args):
         if score < 0.5:
             continue
         x1, y1, x2, y2 = box
-        length = x2 - x1
-        weight = (y2 - y1) * 0.1  # 仅示例，实际需标定
-        print(f"pig detected at [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}], length={length:.1f}, weight~{weight:.1f}kg")
+        length, weight = estimate_length_weight((x1, y1, x2, y2))
+        print(
+            f"pig detected at [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}], length={length:.1f}, weight~{weight:.1f}kg"
+        )
 
 
 if __name__ == '__main__':

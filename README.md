@@ -36,6 +36,14 @@ pig-detector-opencv/
 3. 训练结束后模型会保存在 `models/` 目录。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
 
+预测脚本 `scripts/predict.py` 会在检测到单只猪时给出基于框尺寸的粗略长度与体重估计，
+该逻辑位于 `utils/estimate.py` 中，可按实际数据调整系数以获得更准确的结果。
+示例：
+
+```bash
+python scripts/predict.py --image path/to/pig.jpg
+```
+
 数据集采用 YOLO v5 标注格式，`utils.dataset.YoloDataset` 会在加载时将相对坐标
 转换为像素级的左上角、右下角坐标，以便传入 Faster R-CNN 模型训练。
 
