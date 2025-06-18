@@ -54,7 +54,7 @@ def predict(req: PredictRequest):
         image_path = temp_file.name
     else:
         image_path = image_src
-
+    print(f"图片路径: {image_path}")
     # 本地文件检查
     if not Path(image_path).exists():
         raise HTTPException(status_code=400, detail=f"Image not found: {image_path}")
