@@ -2,6 +2,10 @@
 
 该项目用于使用 Python + OpenCV + PyTorch 训练"猪识别模型"，并可导出 ONNX 模型以供 Java 的 OpenCV (4.5.5) 调用。当前仓库仅提供代码框架，未包含已训练的权重。
 
+## 环境要求
+
+- Python **3.11**（兼容 3.8 及以上版本）
+
 ## 📁 项目目录结构
 
 ```
@@ -35,6 +39,7 @@ pig-detector-opencv/
 2. 在 `config.yaml` 中配置数据集路径和训练参数。
 3. 训练结束后模型会保存在 `models/` 目录。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
+5. 若希望通过 Docker 构建环境，可运行 `./build_docker.sh` 生成镜像。
 
 如需通过 HTTP 调用模型，可启动 FastAPI 服务：
 
