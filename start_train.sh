@@ -7,4 +7,5 @@ fi
 source venv/bin/activate
 # install dependencies using Tsinghua mirror by default
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-python scripts/train.py --config config.yaml
+VERSION=${VERSION:-v1}
+python scripts/train.py --config config.yaml --version "$VERSION"

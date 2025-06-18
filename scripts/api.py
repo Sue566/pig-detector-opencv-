@@ -1,5 +1,6 @@
-    conf: float = 0.5
-    top_k: int | None = 10
+import os
+CFG_PATH = os.environ.get("CFG_PATH", "config.yaml")
+WEIGHTS_PATH = os.environ.get("WEIGHTS_PATH", "models/best_model.pth")
 @app.post("/api/predict")
         MODEL, req.image_path, conf=req.conf, top_k=req.top_k
     )

@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from datetime import datetime
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,12 +82,15 @@ def train(args):
         print(f"Epoch {epoch+1} completed")
 
     Path(cfg['model_dir']).mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), Path(cfg['model_dir']) / 'best_model.pth')
-    print('Training finished, model saved.')
+    meta = {"version": args.version, "trained_at": datetime.now().isoformat()}
+    out_path = Path(cfg['model_dir']) / f"{args.version}_model.pth"
+    torch.save({"model": model.state_dict(), "meta": meta}, out_path)
+    print(f"Training finished, model saved to {out_path}.")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train pig detector')
     parser.add_argument('--config', default='config.yaml', help='Path to config file')
+    parser.add_argument('--version', default='v1', help='Model version tag')
     args = parser.parse_args()
     train(args)

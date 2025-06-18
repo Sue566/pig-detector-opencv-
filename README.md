@@ -35,19 +35,22 @@ pig-detector-opencv/
 ```
 
 ## 快速开始
-1. 执行 `./start_train.sh`（首次运行会创建虚拟环境并安装依赖，脚本已使用
-   清华镜像源加速安装，可按需修改）。
+1. 执行 `VERSION=v1 ./start_train.sh`（首次运行会创建虚拟环境并安装依赖，
+   脚本已使用清华镜像源加速安装，可按需修改）。版本号可自定义，便于后续
+   在 API 中查询。
 2. 在 `config.yaml` 中配置数据集路径和训练参数。
-3. 训练结束后模型会保存在 `models/` 目录。
+3. 训练结束后模型会保存在 `models/` 目录，并带有版本前缀，例如
+   `models/v1_model.pth`。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
 5. 若希望通过 Docker 构建环境，可运行 `./build_docker.sh` 生成镜像。该脚本
    同样默认使用清华镜像安装依赖，构建完成后可通过
    `docker run -p 8000:8000 pig-detector` 启动 API 服务。
 
-如需通过 HTTP 调用模型，可运行 `./start_api.sh` 启动 FastAPI 服务：
+如需通过 HTTP 调用模型，可运行 `./start_api.sh` 启动 FastAPI 服务。
+通过环境变量 `WEIGHTS_PATH` 可指定加载的模型文件：
 
 ```bash
-./start_api.sh
+WEIGHTS_PATH=models/v1_model.pth ./start_api.sh
 ```
 
 启动后向 `POST /api/predict` 发送如下 JSON 即可获得检测结果：
