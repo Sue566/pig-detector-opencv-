@@ -1,4 +1,8 @@
-# scripts/api.py
+    conf: float = 0.5
+    top_k: int | None = 10
+    results = predict_image_with_model(
+        MODEL, req.image_path, conf=req.conf, top_k=req.top_k
+    )
 import tempfile
 import sys
 from pathlib import Path

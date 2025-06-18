@@ -1,7 +1,10 @@
 #!/bin/bash
 # Simple setup and training script for macOS
 set -e
-python3 -m venv venv
+if [ ! -d venv ]; then
+  python3 -m venv venv
+fi
 source venv/bin/activate
-pip install -r requirements.txt
+# install dependencies using Tsinghua mirror by default
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 python scripts/train.py --config config.yaml

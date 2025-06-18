@@ -35,11 +35,14 @@ pig-detector-opencv/
 ```
 
 ## 快速开始
-1. 执行 `./start_train.sh`（首次运行会创建虚拟环境并安装依赖）。
+1. 执行 `./start_train.sh`（首次运行会创建虚拟环境并安装依赖，脚本已使用
+   清华镜像源加速安装，可按需修改）。
 2. 在 `config.yaml` 中配置数据集路径和训练参数。
 3. 训练结束后模型会保存在 `models/` 目录。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
-5. 若希望通过 Docker 构建环境，可运行 `./build_docker.sh` 生成镜像。
+5. 若希望通过 Docker 构建环境，可运行 `./build_docker.sh` 生成镜像。该脚本
+   同样默认使用清华镜像安装依赖，构建完成后可通过
+   `docker run -p 8000:8000 pig-detector` 启动 API 服务。
 
 如需通过 HTTP 调用模型，可运行 `./start_api.sh` 启动 FastAPI 服务：
 
@@ -47,9 +50,18 @@ pig-detector-opencv/
 ./start_api.sh
 ```
 
-然后向 `POST /predict` 发送 JSON `{ "image_path": "path/to/img.jpg" }` 即可获得
-检测结果列表，默认最多返回 10 条记录。通过 `GET /version` 可以查看模型版本
-及训练时间信息。
+启动后向 `POST /predict` 发送如下 JSON 即可获得检测结果：
+
+```json
+{
+  "image_path": "path/to/img.jpg",
+  "conf": 0.5,      // 置信度阈值，可选
+  "top_k": 10       // 最多返回多少条结果，可选
+}
+```
+
+接口会返回列表形式的预测框，并在仅检测到单只猪时给出长度和体重估计。
+通过 `GET /version` 可以查看模型版本及训练时间信息。
 
 预测脚本 `scripts/predict.py` 会在检测到单只猪时给出基于框尺寸的粗略长度与体重估计，
 该逻辑位于 `utils/estimate.py` 中，可按实际数据调整系数以获得更准确的结果。
