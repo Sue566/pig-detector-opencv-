@@ -108,6 +108,9 @@ def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: flo
 
 def main(args):
     results = predict_image(args.config, args.weights, args.image)
+    if not results:
+        print("No pigs detected.")
+        return
     for r in results:
         x1, y1, x2, y2 = r['box']
         print(

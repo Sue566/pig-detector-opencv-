@@ -70,6 +70,7 @@ pig-detector-opencv/
 ```bash
 python scripts/predict.py --image path/to/pig.jpg
 ```
+若未检测到猪，脚本会打印 `No pigs detected.` 以便区分无结果的情况。
 
 数据集采用 YOLO v5 标注格式，`utils.dataset.YoloDataset` 会在加载时将相对坐标
 转换为像素级的左上角、右下角坐标，以便传入 Faster R-CNN 模型训练。
