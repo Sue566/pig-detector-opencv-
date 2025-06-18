@@ -27,6 +27,7 @@ def load_config(path: str):
 
 
 def load_model(cfg_path: str, weight_path: str):
+    """Load model and return it along with optional metadata."""
     global torch
     if torch is None:
         import importlib
@@ -34,10 +35,16 @@ def load_model(cfg_path: str, weight_path: str):
     from utils.model import create_model
     cfg = load_config(cfg_path)
     model = create_model(cfg['num_classes'] + 1)
-    state_dict = torch.load(weight_path, map_location='cpu')
+    data = torch.load(weight_path, map_location='cpu')
+    meta = {}
+    if isinstance(data, dict) and any(k in data for k in ('model', 'state_dict')):
+        state_dict = data.get('model') or data.get('state_dict')
+        meta = data.get('meta', {})
+    else:
+        state_dict = data
     model.load_state_dict(state_dict)
     model.eval()
-    return model
+    return model, meta
 
 
 def _ensure_deps_loaded():
@@ -53,24 +60,9 @@ def _ensure_deps_loaded():
         estimate_length_weight = elw
 
 
-def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: float = 0.5, top_k: int | None = 10):
-    """Run inference on a single image and return results.
-
-    Parameters
-    ----------
-    cfg_path : str
-        Path to configuration YAML.
-    weight_path : str
-        Path to model weights.
-    image_path : str
-        Path to the image file.
-    conf : float, optional
-        Score threshold. Only predictions above this are returned.
-    top_k : int | None, optional
-        Maximum number of results to return. ``None`` means no limit.
-    """
+def predict_image_with_model(model, image_path: str, *, conf: float = 0.5, top_k: int | None = 10):
+    """Run inference with a pre-loaded model."""
     _ensure_deps_loaded()
-    model = load_model(cfg_path, weight_path)
     img = Image.open(image_path).convert('RGB')
     tensor = F.to_tensor(img)
     outputs = model([tensor])[0]
@@ -92,6 +84,26 @@ def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: flo
         if top_k is not None and len(results) >= top_k:
             break
     return results
+
+
+def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: float = 0.5, top_k: int | None = 10):
+    """Run inference on a single image and return results.
+
+    Parameters
+    ----------
+    cfg_path : str
+        Path to configuration YAML.
+    weight_path : str
+        Path to model weights.
+    image_path : str
+        Path to the image file.
+    conf : float, optional
+        Score threshold. Only predictions above this are returned.
+    top_k : int | None, optional
+        Maximum number of results to return. ``None`` means no limit.
+    """
+    model, _ = load_model(cfg_path, weight_path)
+    return predict_image_with_model(model, image_path, conf=conf, top_k=top_k)
 
 
 def main(args):
