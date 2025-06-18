@@ -1,10 +1,11 @@
     conf: float = 0.5
     top_k: int | None = 10
-    results = predict_image_with_model(
+@app.post("/api/predict")
         MODEL, req.image_path, conf=req.conf, top_k=req.top_k
     )
-import tempfile
-import sys
+    result_type = "pig" if results else "other"
+    return {"type": result_type, "results": results}
+@app.get("/api/version")
 from pathlib import Path
 import requests
 from fastapi import FastAPI, HTTPException

@@ -50,7 +50,7 @@ pig-detector-opencv/
 ./start_api.sh
 ```
 
-启动后向 `POST /predict` 发送如下 JSON 即可获得检测结果：
+启动后向 `POST /api/predict` 发送如下 JSON 即可获得检测结果：
 
 ```json
 {
@@ -60,8 +60,8 @@ pig-detector-opencv/
 }
 ```
 
-接口会返回列表形式的预测框，并在仅检测到单只猪时给出长度和体重估计。
-通过 `GET /version` 可以查看模型版本及训练时间信息。
+接口会返回 `type` 字段，若检测到猪则为 `pig`，否则为 `other`，并在仅检测到单只猪时给出长度和体重估计。
+通过 `GET /api/version` 可以查看模型版本及训练时间信息。
 
 预测脚本 `scripts/predict.py` 会在检测到单只猪时给出基于框尺寸的粗略长度与体重估计，
 该逻辑位于 `utils/estimate.py` 中，可按实际数据调整系数以获得更准确的结果。
@@ -70,7 +70,7 @@ pig-detector-opencv/
 ```bash
 python scripts/predict.py --image path/to/pig.jpg
 ```
-若未检测到猪，脚本会打印 `No pigs detected.` 以便区分无结果的情况。
+若未检测到猪，脚本会打印 `Image does not contain pigs.` 以便区分无结果的情况。
 
 数据集采用 YOLO v5 标注格式，`utils.dataset.YoloDataset` 会在加载时将相对坐标
 转换为像素级的左上角、右下角坐标，以便传入 Faster R-CNN 模型训练。
