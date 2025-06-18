@@ -40,7 +40,8 @@ def load_model(cfg_path: str, weight_path: str):
     return model
 
 
-def main(args):
+def _ensure_deps_loaded():
+    """Load heavy dependencies only when actually needed."""
     global Image, F, estimate_length_weight
     if Image is None or F is None:
         from PIL import Image as PILImage
@@ -50,20 +51,55 @@ def main(args):
     if estimate_length_weight is None:
         from utils.estimate import estimate_length_weight as elw
         estimate_length_weight = elw
-    model = load_model(args.config, args.weights)
-    img = Image.open(args.image).convert('RGB')
+
+
+def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: float = 0.5, top_k: int | None = 10):
+    """Run inference on a single image and return results.
+
+    Parameters
+    ----------
+    cfg_path : str
+        Path to configuration YAML.
+    weight_path : str
+        Path to model weights.
+    image_path : str
+        Path to the image file.
+    conf : float, optional
+        Score threshold. Only predictions above this are returned.
+    top_k : int | None, optional
+        Maximum number of results to return. ``None`` means no limit.
+    """
+    _ensure_deps_loaded()
+    model = load_model(cfg_path, weight_path)
+    img = Image.open(image_path).convert('RGB')
     tensor = F.to_tensor(img)
     outputs = model([tensor])[0]
     boxes = outputs['boxes'].detach().numpy()
     scores = outputs['scores'].detach().numpy()
 
+    results = []
     for box, score in zip(boxes, scores):
-        if score < 0.5:
+        if score < conf:
             continue
         x1, y1, x2, y2 = box
         length, weight = estimate_length_weight((x1, y1, x2, y2))
+        results.append({
+            'box': [float(x1), float(y1), float(x2), float(y2)],
+            'score': float(score),
+            'length': float(length),
+            'weight': float(weight),
+        })
+        if top_k is not None and len(results) >= top_k:
+            break
+    return results
+
+
+def main(args):
+    results = predict_image(args.config, args.weights, args.image)
+    for r in results:
+        x1, y1, x2, y2 = r['box']
         print(
-            f"pig detected at [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}], length={length:.1f}, weight~{weight:.1f}kg"
+            f"pig detected at [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}], length={r['length']:.1f}, weight~{r['weight']:.1f}kg"
         )
 
 

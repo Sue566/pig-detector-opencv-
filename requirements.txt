@@ -7,3 +7,5 @@ opencv-python
 torch
 torchvision
 onnx
+fastapi
+uvicorn

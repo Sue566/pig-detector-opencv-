@@ -36,6 +36,15 @@ pig-detector-opencv/
 3. 训练结束后模型会保存在 `models/` 目录。
 4. 如需在 Java 中使用，可执行 `python scripts/export_to_onnx.py` 导出 ONNX 模型。
 
+如需通过 HTTP 调用模型，可启动 FastAPI 服务：
+
+```bash
+python scripts/api.py
+```
+
+然后向 `POST /predict` 发送 JSON `{ "image_path": "path/to/img.jpg" }` 即可获得
+检测结果列表，默认最多返回 10 条记录。
+
 预测脚本 `scripts/predict.py` 会在检测到单只猪时给出基于框尺寸的粗略长度与体重估计，
 该逻辑位于 `utils/estimate.py` 中，可按实际数据调整系数以获得更准确的结果。
 示例：
