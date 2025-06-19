@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from utils.logging_utils import setup_logging
+
 try:
     import yaml
 except ImportError:  # pragma: no cover - handled at runtime
@@ -137,15 +139,20 @@ def predict_image(cfg_path: str, weight_path: str, image_path: str, *, conf: flo
 
 
 def main(args):
+    logger = setup_logging("predict")
+    logger.info("Running prediction on %s", args.image)
     results = predict_image(args.config, args.weights, args.image)
     if not results:
+        logger.info("Image does not contain pigs.")
         print("Image does not contain pigs.")
         return
     for r in results:
         x1, y1, x2, y2 = r['box']
-        print(
+        msg = (
             f"pig detected at [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}], length={r['length']:.1f}, weight~{r['weight']:.1f}kg"
         )
+        logger.info(msg)
+        print(msg)
 
 
 if __name__ == '__main__':

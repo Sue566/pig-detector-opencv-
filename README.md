@@ -46,6 +46,8 @@ pig-detector-opencv/
    同样默认使用清华镜像安装依赖，构建完成后可通过
    `docker run -p 8000:8000 pig-detector` 启动 API 服务。
 
+训练与 API 运行过程中的日志会写入 `logs/` 目录，单个文件大小上限为 10M，最多保留 5 个轮换文件。
+
 如需通过 HTTP 调用模型，可运行 `./start_api.sh` 启动 FastAPI 服务。
 通过环境变量 `WEIGHTS_PATH` 可指定加载的模型文件：
 

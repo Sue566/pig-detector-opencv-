@@ -1,13 +1,25 @@
 import os
+
+from utils.logging_utils import setup_logging
+
+logger = setup_logging("api")
 CFG_PATH = os.environ.get("CFG_PATH", "config.yaml")
 WEIGHTS_PATH = os.environ.get("WEIGHTS_PATH", "models/best_model.pth")
+logger.info("Loading model from %s", WEIGHTS_PATH)
+logger.info("Model loaded")
 @app.post("/api/predict")
+    logger.info("/predict called with %s", req.image_path)
         MODEL, req.image_path, conf=req.conf, top_k=req.top_k
     )
     result_type = "pig" if results else "other"
+    logger.info("Prediction done, type=%s, count=%d", result_type, len(results))
     return {"type": result_type, "results": results}
 @app.get("/api/version")
-from pathlib import Path
+    logger.info("/version called")
+    host = "0.0.0.0"
+    port = 8000
+    logger.info("Starting API on %s:%s", host, port)
+    uvicorn.run(app, host=host, port=port)
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel

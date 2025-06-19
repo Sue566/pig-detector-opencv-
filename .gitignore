@@ -7,3 +7,4 @@ models/
 *.onnx
 .DS_Store
 temp/
+logs/

@@ -3,9 +3,12 @@ from pathlib import Path
 from datetime import datetime
 import sys
 
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from utils.logging_utils import setup_logging
 
 try:
     import yaml
@@ -48,6 +51,9 @@ def train(args):
     from utils.dataset import YoloDataset
     from utils.model import create_model
     from utils.transforms import get_train_transforms
+    logger = setup_logging("train")
+    logger.info("Training started")
+    logger.info("Loading config from %s", args.config)
     cfg = load_config(args.config)
 
     train_ds = YoloDataset(cfg['train_dir'], transforms=get_train_transforms())
@@ -79,13 +85,13 @@ def train(args):
             epoch_bar.set_postfix(loss=f"{losses.item():.4f}")
 
         # 每个 epoch 结束打印提示，防止用户误以为卡住
-        print(f"Epoch {epoch+1} completed")
+        logger.info("Epoch %s completed", epoch + 1)
 
     Path(cfg['model_dir']).mkdir(parents=True, exist_ok=True)
     meta = {"version": args.version, "trained_at": datetime.now().isoformat()}
     out_path = Path(cfg['model_dir']) / f"{args.version}_model.pth"
     torch.save({"model": model.state_dict(), "meta": meta}, out_path)
-    print(f"Training finished, model saved to {out_path}.")
+    logger.info("Training finished, model saved to %s", out_path)
 
 
 if __name__ == '__main__':
