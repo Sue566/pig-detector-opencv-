@@ -77,7 +77,7 @@ def _download_if_url(image_path: str):
     if image_path.startswith("http://") or image_path.startswith("https://"):
         _ensure_requests()
         timestamp = str(int(time.time()))
-        temp_dir = Path("temp") / timestamp
+        temp_dir = ROOT / "temp" / timestamp
         temp_dir.mkdir(parents=True, exist_ok=True)
         local_path = temp_dir / Path(image_path).name
         resp = requests.get(image_path, stream=True)

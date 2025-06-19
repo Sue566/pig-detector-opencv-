@@ -1,13 +1,20 @@
-import os
+from fastapi import FastAPI, HTTPException
 import sys
-import tempfile
-from pathlib import Path
+# Use project root for default config and weights paths
+CFG_PATH = Path(os.environ.get("CFG_PATH", ROOT / "config.yaml")).resolve()
+WEIGHTS_PATH = Path(os.environ.get("WEIGHTS_PATH", ROOT / "models" / "best_model.pth")).resolve()
 
-from utils.logging_utils import setup_logging
+MODEL, MODEL_META = load_model(str(CFG_PATH), str(WEIGHTS_PATH))
 
-logger = setup_logging("api")
-CFG_PATH = os.environ.get("CFG_PATH", "config.yaml")
-WEIGHTS_PATH = os.environ.get("WEIGHTS_PATH", "models/best_model.pth")
+    try:
+        results = predict_image_with_model(
+            MODEL, req.image_path, conf=req.conf, top_k=req.top_k
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=400, detail=f"Image not found: {req.image_path}")
+    except Exception as e:
+        logger.exception("Prediction failed: %s", e)
+        raise HTTPException(status_code=500, detail="Prediction failed")
 logger.info("Loading model from %s", WEIGHTS_PATH)
 logger.info("Model loaded")
 
