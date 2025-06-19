@@ -6,3 +6,4 @@ models/
 *.pth
 *.onnx
 .DS_Store
+temp/

@@ -57,11 +57,12 @@ WEIGHTS_PATH=models/v1_model.pth ./start_api.sh
 
 ```json
 {
-  "image_path": "path/to/img.jpg",
-  "conf": 0.5,      // 置信度阈值，可选
-  "top_k": 10       // 最多返回多少条结果，可选
+"image_path": "path/to/img.jpg",
+"conf": 0.5,      // 置信度阈值，可选
+"top_k": 10       // 最多返回多少条结果，可选
 }
 ```
+其中 `image_path` 可以是本地路径，也可以是 `http(s)` 链接。若为远程地址，服务会在项目根目录下创建 `temp/<timestamp>/` 目录下载图片，预测完成后自动删除该目录。
 
 接口会返回 `type` 字段，若检测到猪则为 `pig`，否则为 `other`，并在仅检测到单只猪时给出长度和体重估计。
 通过 `GET /api/version` 可以查看模型版本及训练时间信息。
@@ -72,6 +73,8 @@ WEIGHTS_PATH=models/v1_model.pth ./start_api.sh
 
 ```bash
 python scripts/predict.py --image path/to/pig.jpg
+# 也可以使用遠程地址
+python scripts/predict.py --image https://example.com/pig.jpg
 ```
 若未检测到猪，脚本会打印 `Image does not contain pigs.` 以便区分无结果的情况。
 

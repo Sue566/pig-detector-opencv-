@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 import sys
+import time
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -15,6 +17,7 @@ torch = None
 Image = None
 F = None
 estimate_length_weight = None
+requests = None
 
 
 def load_config(path: str):
@@ -60,10 +63,35 @@ def _ensure_deps_loaded():
         estimate_length_weight = elw
 
 
+def _ensure_requests():
+    global requests
+    if requests is None:
+        import importlib
+        requests = importlib.import_module("requests")
+
+
+def _download_if_url(image_path: str):
+    """Download image if given a URL. Returns local path and temp dir."""
+    if image_path.startswith("http://") or image_path.startswith("https://"):
+        _ensure_requests()
+        timestamp = str(int(time.time()))
+        temp_dir = Path("temp") / timestamp
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        local_path = temp_dir / Path(image_path).name
+        resp = requests.get(image_path, stream=True)
+        resp.raise_for_status()
+        with open(local_path, "wb") as f:
+            for chunk in resp.iter_content(chunk_size=8192):
+                f.write(chunk)
+        return str(local_path), temp_dir
+    return image_path, None
+
+
 def predict_image_with_model(model, image_path: str, *, conf: float = 0.5, top_k: int | None = 10):
     """Run inference with a pre-loaded model."""
     _ensure_deps_loaded()
-    img = Image.open(image_path).convert('RGB')
+    local_path, temp_dir = _download_if_url(image_path)
+    img = Image.open(local_path).convert('RGB')
     tensor = F.to_tensor(img)
     outputs = model([tensor])[0]
     boxes = outputs['boxes'].detach().numpy()
@@ -83,6 +111,8 @@ def predict_image_with_model(model, image_path: str, *, conf: float = 0.5, top_k
         })
         if top_k is not None and len(results) >= top_k:
             break
+    if temp_dir:
+        shutil.rmtree(temp_dir, ignore_errors=True)
     return results
 
 
