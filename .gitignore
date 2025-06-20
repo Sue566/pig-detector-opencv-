@@ -6,3 +6,8 @@ models/
 *.pth
 *.onnx
 .DS_Store
+temp/
+logs/
+data/
+images/
+.idea
