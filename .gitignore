@@ -8,6 +8,8 @@ models/
 .DS_Store
 temp/
 logs/
+
+*.tar.gz
 data/
 images/
 .idea

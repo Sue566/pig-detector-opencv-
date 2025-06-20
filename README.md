@@ -45,6 +45,7 @@ pig-detector-opencv/
 5. 若希望通过 Docker 构建环境，可运行 `./build_docker.sh` 生成镜像。该脚本
    同样默认使用清华镜像安装依赖，构建完成后可通过
    `docker run -p 8000:8000 pig-detector` 启动 API 服务。
+6. 也可以执行 ./package_api.sh 打包为 pig-detector-api.tar.gz 以便分发。
 
 训练与 API 运行过程中的日志会写入 `logs/` 目录，单个文件大小上限为 10M，最多保留 5 个轮换文件。
 
