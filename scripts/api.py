@@ -40,8 +40,16 @@ except Exception as e:
     # 如果模型加载失败，通常应该退出程序
     sys.exit(1)
 
+# ─── 额外：健康检查接口 ────────────────────────────────────────────
+@app.get("/health")
+def health_check():
+    """
+    简单的健康检查，用于确认服务已启动并可正常访问。
+    """
+    return {"status": "ok", "message": "Pig Detector API is up and running!"}
+
 # ─── 七：预测接口 ───────────────────────────────────────────────────
-@app.post("/predict", response_model=PredictResponse)
+@app.post("/api/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
     # 支持远程 URL
     image_src = req.image_path
@@ -81,7 +89,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "scripts.api:app",
         host="0.0.0.0",
-        port=8093,
+        port=8092,
         reload=True,
         log_level="info"
     )
